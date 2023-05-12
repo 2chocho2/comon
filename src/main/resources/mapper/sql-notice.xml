@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="comon.mapper.NoticeMapper">
+
+	<!-- 검색 조건과 일치하는 게시물 개수를 조회 -->
+	<select id="selectNoticeListCount" resultType="int">
+	   select count(*)
+	     from t_notice
+	    where delete_yn = 'N'
+	</select>
+      
+	<!-- 검색 조건과 일치하는 게시판 중 offset에서부터 10개만 조회해서 반환 -->
+	<select id="selectNoticeListPage" parameterType="int" resultType="comon.dto.NoticeDto">
+		select notice_idx, notice_title, n.notice_category_idx, nc.notice_category_name, regist_dt		
+		  from t_notice n, t_notice_category nc
+		 where delete_yn = 'N'
+		   and n.notice_category_idx = nc.notice_category_idx
+	  order by notice_idx desc
+		 limit #{offset}, 10
+	</select>
+	
+	<!-- 게시물 목록 -->
+	<select id="selectNoticeList"  resultType="comon.dto.NoticeDto">
+		select notice_idx, notice_title, n.notice_category_idx, nc.notice_category_name, regist_dt
+		  from t_notice n, t_notice_category nc
+		 where delete_yn = 'N'
+		   and n.notice_category_idx = nc.notice_category_idx
+	  order by notice_idx desc
+	</select>
+	
+	<!-- 카테고리 목록 -->
+	<select id="selectCategory" resultType="comon.dto.NoticeCategoryDto">
+	   SELECT notice_category_idx, notice_category_name
+	     FROM t_notice_category 
+	</select>
+	
+	<!-- 사용자가 선택한 카테고리 게시물 출력 -->
+   	<select id="selectCategoryList" parameterType="int" resultType="comon.dto.NoticeDto">
+      select notice_idx, notice_title, notice_category_name, regist_dt
+        from t_notice n, t_notice_category nc
+       Where n.notice_category_idx = #{noticeCategoryIdx}
+       	 and nc.notice_category_idx = #{noticeCategoryIdx}
+         and n.delete_yn = 'N'
+   </select>
+	
+	<!-- 게시물 상세조회 -->
+	<select id="selectNoticeDetail" parameterType="int" resultType="comon.dto.NoticeDto">
+		select n.notice_idx, n.notice_title, n.notice_content, nc.notice_category_name, n.regist_dt, n.notice_category_idx
+		  from t_notice n, t_notice_category nc
+		 where delete_yn = 'N'
+		   and notice_idx = #{noticeIdx}		       
+		   and n.notice_category_idx = nc.notice_category_idx
+	</select>
+	
+	<!-- 게시물 작성 -->
+	<insert id="writeNotice" parameterType="comon.dto.NoticeDto">
+		insert into t_notice (notice_title, notice_content, notice_category_idx, regist_dt)
+		values	    (#{noticeTitle}, #{noticeContent}, #{noticeCategoryIdx}, now())
+	</insert>
+	
+	<!-- 게시물 수정 -->
+	<update id="updateNotice" parameterType="comon.dto.NoticeDto">
+		update t_notice
+		   set notice_title = #{noticeTitle}, 
+		       notice_content = #{noticeContent}, 
+		       regist_dt = now(),
+		       notice_category_idx = #{noticeCategoryIdx}
+		 where notice_idx = #{noticeIdx}		 
+	</update>
+	
+	<!-- 게시물 삭제 -->
+	<delete id="deleteNotice" parameterType="int">
+	   update t_notice
+	      set delete_yn = 'Y', 
+	          regist_dt = now(),
+	          notice_idx = notice_idx
+	    where notice_idx = #{noticeIdx}        
+	</delete>
+	
+</mapper>

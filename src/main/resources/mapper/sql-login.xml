@@ -1,0 +1,24 @@
+<?xml version= "1.0"  encoding= "UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="comon.mapper.LoginMapper">
+	<!--  일반 회원정보 저장  -->
+   <insert id= "registUser" parameterType= "comon.dto.UserDto" >
+   insert into t_user (user_id, user_password, user_name, user_phone_number, user_email, auth_idx, sign_date)
+   
+   values ( #{userId}, #{userPassword}, #{userName}, #{userPhoneNumber}, #{userEmail}, #{authIdx}, now() )
+   </insert>
+	
+	<!--  로그인 쿼리 -->
+	<select id="login" parameterType="comon.dto.LoginDto" resultType="comon.dto.UserDto">
+	      select user_idx, user_id, user_name, user_password, user_phone_number, user_email, auth_idx
+	        from t_user
+	       where user_id = #{userId} and user_password = #{userPassword}
+	</select>
+	
+	<select id="selectUserByUserId" parameterType="String" resultType="comon.dto.UserDto">
+	 SELECT user_id, user_password, user_name, user_email, auth_idx
+	   FROM t_user
+	  WHERE user_id = #{userId}
+	</select>
+</mapper>

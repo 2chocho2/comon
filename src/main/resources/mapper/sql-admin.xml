@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="comon.mapper.AdminMapper">
+
+	<!-- 1. 전체 앱 목록 조회 -->
+	<select id="openAppList" resultType="comon.dto.ImageDto">
+		SELECT t.image_idx, t.image_name, t.thumbnail_image, t.image_description, t.user_idx, d.user_name, t.image_detail, t.category_idx, t.icon_image, t.yaml_file, t.status_idx, t.screenshot_image1, t.screenshot_image2, t.screenshot_image3, screenshot_image4, screenshot_image5, screenshot_image6, t.regist_dt
+		  FROM t_image t, t_user d
+		 WHERE t.user_idx = d.user_idx
+	  ORDER BY regist_dt desc
+	</select>
+	
+	<!-- 1-1. 삭제 신청 상태의 앱 조회 -->
+	<select id="openRegistDeleteAppList" resultType="comon.dto.ImageDto">
+		SELECT t.image_idx, t.image_name, t.thumbnail_image, t.image_description, t.user_idx, t.image_detail, t.category_idx, t.icon_image, t.yaml_file, t.status_idx, t.screenshot_image1, t.screenshot_image2, t.screenshot_image3, screenshot_image4, screenshot_image5, screenshot_image6, t.regist_dt
+		  FROM t_image t, t_user u
+		 WHERE status_idx = '5'
+		   AND t.user_idx = u.user_idx
+	  ORDER BY regist_dt desc
+	</select>
+	
+	<!-- 1-2. 서비스 중인 앱 조회 -->
+	<select id="openAppListOnService" resultType="comon.dto.ImageDto">
+		SELECT t.image_idx, t.image_name, t.thumbnail_image, t.image_description, t.user_idx, t.image_detail, t.category_idx, t.icon_image, t.yaml_file, d.user_name, t.status_idx, t.screenshot_image1, t.screenshot_image2, t.screenshot_image3, screenshot_image4, screenshot_image5, screenshot_image6, t.regist_dt
+		  FROM t_image t, t_user d
+		 WHERE status_idx = '4'
+		   AND t.user_idx = d.user_idx
+	  ORDER BY regist_dt desc
+	</select>
+	
+	<!-- 1-3. 등록 상태의 앱 조회(심사 전) -->
+	<select id="openRegistAppList" resultType="comon.dto.ImageDto">
+		SELECT t.image_idx, t.image_name, t.thumbnail_image, t.image_description, t.user_idx, t.image_detail, t.category_idx, t.icon_image, t.yaml_file, u.user_name, t.status_idx, t.screenshot_image1, t.screenshot_image2, t.screenshot_image3, screenshot_image4, screenshot_image5, screenshot_image6, t.regist_dt
+		  FROM t_image t, t_user u
+		 WHERE status_idx = '1'
+		   AND t.user_idx = u.user_idx
+	  ORDER BY regist_dt desc
+	</select>
+	
+	<!-- 2. 삭제된 앱 목록 조회 -->
+	<select id="openDeletedAppList" resultType="comon.dto.ImageDto">
+		SELECT image_idx, image_name, thumbnail_image, image_description, t.user_idx, image_detail, category_idx, icon_image, yaml_file, status_idx, screenshot_image1, screenshot_image2, screenshot_image3, screenshot_image4, screenshot_image5, screenshot_image6, regist_dt
+		  FROM t_image t, t_user u
+		 WHERE status_idx = '6'
+		   AND t.user_idx = u.user_idx
+	  ORDER BY regist_dt desc
+	</select>
+	
+	<!-- 3. 개발자별 앱 목록 조회 -->
+	<select id="openAppListByUser" resultType="comon.dto.ImageDto">
+		SELECT image_idx, deny_idx, image_name, user_idx, thumbnail_image, image_description, image_detail, category_idx, icon_image, yaml_file, status_idx, screenshot_image1, screenshot_image2, screenshot_image3, screenshot_image4, screenshot_image5, screenshot_image6, regist_dt, download_count
+		  FROM t_image
+		 WHERE user_idx = #{userIdx}
+	  ORDER BY regist_dt desc
+	</select>
+	
+	<!-- 4-0. 앱 등록 전 userIdx 세팅 -->
+	<select id="selectIdxByUserId" parameterType="String" resultType="int">
+	 SELECT user_idx
+	   FROM t_user
+	  WHERE user_id = #{userId}
+	</select>
+	
+	<!-- 4. 앱 등록 -->
+	<insert id="registApp" parameterType="comon.dto.ImageDto">
+	  INSERT INTO t_image (
+					image_name, 
+					thumbnail_image, 
+					image_description, 
+					image_detail, 
+					category_idx,
+					icon_image, 
+					yaml_file, 
+					user_idx,
+					status_idx, 
+					screenshot_image1, 
+					screenshot_image2, 
+					screenshot_image3, 
+					screenshot_image4, 
+					screenshot_image5, 
+					screenshot_image6,
+					regist_dt,
+					download_count,
+					random_num)
+	 	  VALUES (#{imageName},
+	 	  			#{thumbnailImage},
+	 	  			#{imageDescription},
+	 	  			#{imageDetail},
+	 	  			#{categoryIdx},
+	 	  			#{iconImage},
+	 	  			#{yamlFile},
+	 	  			#{userIdx},
+	 	  			'1',
+	 	  			#{screenshotImage1},
+	 	  			#{screenshotImage2},
+	 	  			#{screenshotImage3},
+	 	  			#{screenshotImage4},
+	 	  			#{screenshotImage5},
+	 	  			#{screenshotImage6},
+	 	  			now(),
+	 	  			'0',
+	 	  			#{randomNum})
+	</insert>
+	
+	<!-- 5. 앱 삭제 신청 -->
+	<update id="registDeleteApp" parameterType="comon.dto.ImageDto">
+	  UPDATE t_image
+	     SET status_idx = '5'
+	   WHERE image_idx = #{imageIdx}
+	</update>
+	
+	<!-- 6. 앱 삭제 등록 -->
+	<update id="deleteApp" parameterType="comon.dto.ImageDto">
+	  UPDATE t_image
+	     SET status_idx = '6',
+	     	 delete_dt = now()
+	   WHERE image_idx = #{imageIdx}
+	</update>
+	
+	<!-- 7. 카테고리 코드로 카테고리 이름 조회 -->
+	<select id="selectCategoryNameByIdx" resultType="comon.dto.CategoryDto">
+	 SELECT category_name
+	   FROM t_category
+	  WHERE category_idx = #{categoryIdx}
+	</select>
+	
+	<!-- 8. 상태 코드로 심사 상태 이름 조회 -->
+	<select id="selectStatusNameByIdx" resultType="comon.dto.StatusDto">
+	 SELECT status_name
+	   FROM t_status
+	  WHERE status_idx = #{statusIdx}
+	</select>
+	
+	<!-- 10. 이미지 번호로 개발자 정보 조회 -->
+	<select id="selectUserByImageIdx" parameterType="Integer" resultType="String">
+	SELECT id.user_idx
+	  FROM t_image i, t_image_user_dev id
+	 WHERE i.image_idx = #{imageIdx}
+	   AND id.image_idx = #{imageIdx}
+	</select>
+	
+	<!-- 11. user id로 개발자 이름 조회 -->
+	<select id="selectNameByUserIdx" parameterType="Integer" resultType="String">
+	 SELECT d.user_name
+	   FROM t_user d
+	  WHERE d.user_idx = #{userIdx}
+	</select>
+	
+	<!-- 12. 심사를 위한 이미지 상세 조회 -->
+	<select id="openImageDetail" parameterType="Integer" resultType="comon.dto.ImageDto">
+	 SELECT t.image_idx, t.image_name, t.thumbnail_image, t.image_description, t.user_idx, d.user_name, t.image_detail, t.category_idx, t.icon_image, t.yaml_file, t.status_idx, t.screenshot_image1, t.screenshot_image2, t.screenshot_image3, screenshot_image4, screenshot_image5, screenshot_image6, t.regist_dt
+	   FROM t_image t, t_user d
+	  WHERE t.user_idx = d.user_idx
+	    AND t.image_idx = #{imageIdx}
+	</select>
+	
+	<!-- 심사 후 출시 승인 -->
+	<update id="accessRegist" parameterType="comon.dto.ImageDto">
+	  UPDATE t_image
+	     SET status_idx = '4',
+	     	regist_dt = now()
+	   WHERE image_idx = #{imageIdx}
+	</update>
+	
+	<!-- 심사 후 출시 거절 -->
+	<update id="denyRegist" parameterType="comon.dto.ImageDto">
+	 UPDATE t_image
+	    SET status_idx = '3',
+	    	deny_idx = #{denyIdx}
+	  WHERE image_idx = #{imageIdx}
+	</update>
+	
+	<!-- 심사 거절 시 사유 목록 조회 -->
+	<select id="openDenyReasonList" resultType="comon.dto.DenyDto">
+	 SELECT deny_idx, deny_name
+	   FROM t_deny
+	</select>
+	
+	<!-- 개발자 setting  -->
+	<select id="openUserPage" resultType="comon.dto.UserDto">
+	SELECT user_idx, user_name, user_id, user_phone_number, user_email
+	  FROM t_user
+	 WHERE user_id = #{userId}
+	</select>
+	
+	<!-- 관리자 setting -->
+	<select id="selectAllDev" resultType="comon.dto.UserDto">
+	 SELECT user_idx, user_id, user_password, user_email, user_phone_number, user_name
+	   FROM t_user
+	  WHERE auth_idx = '2'
+	</select>
+	
+	<select id="selectAllUser" resultType="comon.dto.UserDto">
+	 SELECT user_idx, user_id, user_password, user_email, user_name, user_phone_number
+	   FROM t_user
+	  WHERE auth_idx = '1'
+	</select>
+	
+	<!-- 개발자 회원 정보 수정 -->
+	<update id="editUserInfo" parameterType="comon.dto.UserDto">
+	 UPDATE t_user
+	    SET user_name = #{userName},
+	    	user_email = #{userEmail},
+	    	user_phone_number = #{userPhoneNumber}
+	  WHERE user_id = #{userId}
+	</update>
+</mapper>

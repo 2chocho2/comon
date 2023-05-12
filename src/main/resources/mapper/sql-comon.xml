@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="comon.mapper.ComonMainMapper">
+	<!-- 메인에 랜덤으로 3개 앱 목록 출력 -->
+	<select id="openRecommendApp" resultType="comon.dto.ImageDto">
+	 SELECT image_idx, image_name, image_description, image_detail, thumbnail_image, icon_image
+	   FROM t_image
+	  WHERE status_idx = '4'
+   ORDER BY rand()
+	  LIMIT 3
+	</select>
+	
+	<!-- 다운로드 카운트가 가장 높은 3개 출력 -->
+	<select id="openAppRanking" resultType="comon.dto.ImageDto">
+	 SELECT image_idx, i.image_name, i.image_description, i.image_detail, i.thumbnail_image, i.icon_image, d.user_name
+	   FROM t_image i, t_user d 
+	  WHERE status_idx = '4'
+	    AND i.user_idx = d.user_idx
+   ORDER BY download_count
+	  LIMIT 3
+	</select>
+	
+	<!-- 전체 앱 리스트 출력 -->
+	<select id="openAllAppList" resultType="comon.dto.ImageDto">
+	 SELECT image_idx, image_name, image_description, thumbnail_image, icon_image
+	   FROM t_image
+	  WHERE status_idx = '4'
+	  ORDER BY download_count desc
+	</select>
+	
+	<!-- 카테고리별 앱 리스트 출력 -->
+	<select id="openAppListByCategory" resultType="comon.dto.ImageDto">
+	 SELECT image_idx, image_name, image_description, thumbnail_image, icon_image
+	   FROM t_image
+	  WHERE category_idx = #{categoryIdx}
+	    AND status_idx = '4'
+	    ORDER BY regist_dt desc
+	</select>
+	
+	<!-- 다운로드 카운트 높은 순으로 앱 리스트 출력 -->
+	<select id="openAppListByCount" resultType="comon.dto.ImageDto">
+	 SELECT image_idx, image_name, image_description, thumbnail_image, icon_image
+	   FROM t_image
+	  WHERE status_idx = '4'
+   ORDER BY download_count desc
+  	</select>
+	
+	<!-- 출시일 순으로 앱 리스트 출력 -->
+	<select id="openAppListByRegistDt" resultType="comon.dto.ImageDto">
+	 SELECT image_idx, image_name, image_description, thumbnail_image, icon_image
+	   FROM t_image
+	  WHERE status_idx = '4'
+   ORDER BY regist_dt desc
+  	</select>
+  	
+	<!-- 앱 이름 가나다 순으로 목록 출력 -->
+	<select id="openAppListByName" resultType="comon.dto.ImageDto">
+	 SELECT image_idx, image_name, image_description, thumbnail_image, icon_image
+	   FROM t_image
+	  WHERE status_idx = '4'
+   ORDER BY image_name
+  	</select>
+	
+	<!-- 앱 상세 페이지 조회 -->
+	<select id="openAppDetail" resultType="comon.dto.ImageDto">
+	 SELECT image_idx, image_name, download_count, thumbnail_image, image_description, i.user_idx, u.user_name, image_detail, category_idx, icon_image, status_idx, screenshot_image1, screenshot_image2, screenshot_image3, screenshot_image4, screenshot_image5, screenshot_image6, regist_dt
+	   FROM t_image i, t_user u
+	  WHERE image_idx = #{imageIdx}
+	    AND i.user_idx = u.user_idx
+	</select>
+	
+	<!-- download 전 download 내역 확인 -->
+	<select id="checkDownload" resultType="String">
+	 SELECT delete_yn
+	   FROM t_image_user
+	  WHERE user_idx = #{userIdx}
+	    AND image_idx = #{imageIdx}
+	</select>
+	
+	<!-- 재다운로드인 경우 deleteYn 변경 -->
+	<update id="toggleDeleteYn" parameterType="comon.dto.ImageUserDto">
+	 UPDATE t_image_user
+	    SET delete_yn = 'N'
+	  WHERE user_idx = #{userIdx}
+	    AND image_idx = #{imageIdx}
+	</update>
+	
+	<!-- 앱 다운로드 -->
+	<insert id="downloadApp" parameterType="comon.dto.ImageUserDto">
+	 INSERT INTO t_image_user (image_idx, user_idx, springboot_port, react_port, download_date)
+	 	  VALUES (#{imageIdx}, #{userIdx}, #{springbootPort}, #{reactPort}, now())
+	</insert>
+	
+	<!-- 유저 아이디로 idx 조회 -->
+	<select id="selectUserIdx" resultType="Integer">
+	 SELECT user_idx
+	   FROM t_user
+	  WHERE user_id = #{userId}
+	</select>
+	
+	<!-- 이미지 idx로 고유 번호 조회 -->
+	<select id="selectRandomNum" parameterType="Integer" resultType="Long">
+	 SELECT random_num
+	   FROM t_image
+	  WHERE image_idx = #{imageIdx}
+	</select>
+	
+	<!-- 앱 다운로드 카운트 증가 -->
+	<update id="addDownloadCount" parameterType="comon.dto.ImageDto">
+	 UPDATE t_image
+	    SET download_count = download_count + 1
+	  WHERE image_idx = #{imageIdx}
+	</update>
+	
+	<!-- 포트 테이블에 데이터 추가 후 pk(사용할 포트 번호) 반환받기 -->
+	<insert id="insertPort" useGeneratedKeys="true" keyProperty="portNumber" parameterType="comon.dto.PortDto">
+    <selectKey keyProperty="portNumber" resultType="Integer" order="AFTER">
+        SELECT LAST_INSERT_ID();
+    </selectKey>
+    INSERT INTO t_port (usable_yn)
+    VALUES ('N')
+	</insert>
+	
+	<!-- 리뷰 점수 평균 -->
+	<select id="openReviewAverage" resultType="Double">
+	 SELECT AVG(score_count)
+	   FROM t_image_review
+	  WHERE image_idx = #{imageIdx}
+	</select>
+	
+	<!-- 리뷰 별점 점수별 비율 출력 -->
+	<select id="selectScoreRatio" parameterType="Integer" resultType="Integer" >
+	SELECT ROUND((COUNT(CASE WHEN score_count=#{scoreCount} THEN 1 END) / COUNT(*)) * 100)
+	  FROM t_image_review
+	 WHERE image_idx = #{imageIdx}
+	</select>
+	
+	<!-- 리뷰 목록 출력 -->
+	<select id="openReviewList" resultType="comon.dto.ImageReviewDto">
+	 SELECT ir.review_content, ir.regist_dt, u.user_name, ir.score_count
+	   FROM t_image_review ir, t_user u
+	  WHERE ir.image_idx = #{imageIdx}
+	    AND ir.user_idx = u.user_idx
+   ORDER BY ir.regist_dt
+	</select>
+	
+	<!-- 이미지 인덱스로 yamlFile 선택 -->
+	<select id="selectYamlFile" resultType="STRING">
+	 SELECT yaml_file
+	   FROM t_image
+	  WHERE image_idx = #{imageIdx}
+	</select>
+</mapper>

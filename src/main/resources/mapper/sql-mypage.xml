@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="comon.mapper.MyPageMapper">
+	
+	<!-- 마이페이지 접속 시 사용자 이름 출력 -->
+	<select id="selectUserName" resultType="String">
+	 SELECT user_name
+	   FROM t_user
+	  WHERE user_id = #{userId}
+	</select>
+	
+	<!-- 리뷰 작성 -->
+	<insert id="writeReview" parameterType="comon.dto.ImageReviewDto">
+	 INSERT INTO t_image_review (image_idx, review_content, regist_dt, user_idx, score_count)
+	      VALUES (#{imageIdx}, #{reviewContent}, now(), #{userIdx}, #{scoreCount})
+	</insert>
+	
+	<!-- 리뷰 삭제 -->
+	<delete id="deleteReview" parameterType="int">
+	 DELETE
+	   FROM t_image_review
+	  WHERE review_idx = #{reviewIdx}
+	</delete>
+	
+	<!-- 이미지에 유저가 리뷰를 작성한적 있는지 확인 -->
+	<select id="checkReview" parameterType="int" resultType="int">
+	 SELECT count(*) AS select_count
+	   FROM t_image_review
+	  WHERE image_idx = #{imageIdx}
+		AND user_idx = #{userIdx}; 
+	</select>
+
+	<!-- 마이페이지에서 작성한 리뷰리스트 조회 -->
+	<select id="selectReview" resultType="comon.dto.ImageReviewDto">
+	 SELECT ir.image_idx, ir.review_content, ir.regist_dt, ir.user_idx, i.thumbnail_image, i.image_name, ir.review_idx	
+	   FROM t_image_review ir , t_image i
+	  WHERE ir.user_idx = #{userIdx}
+	    AND ir.image_idx = i.image_idx
+	</select>
+	
+	<!-- 유저가 사용하는 앱 목록 출력 -->
+	<select id="openAppListByUser" resultType="comon.dto.ImageDto">
+	 SELECT i.image_idx, i.image_name, i.icon_image, i.thumbnail_image, d.user_name, i.image_description, iu.springboot_port, iu.react_port
+	   FROM t_image i, t_image_user iu, t_user d
+	  WHERE iu.user_idx = #{userIdx}
+	    AND i.image_idx = iu.image_idx
+	    AND d.user_idx = i.user_idx
+  		AND iu.delete_yn = 'N'
+	</select>
+	
+	<!-- 앱 삭제 -->
+	<update id="deleteAppUser" parameterType="comon.dto.ImageUserDto">
+	 UPDATE t_image_user
+	    SET delete_yn = 'Y'
+	  WHERE image_idx = #{imageIdx}
+	    AND user_idx = #{userIdx}
+	</update>
+	
+	<!-- 회원 정보 수정 화면 요청 -->
+	<select id="selectUserInfo" resultType="comon.dto.UserDto">
+	 SELECT user_name, user_phone_number, user_email
+	   FROM t_user
+	  WHERE user_id = #{userId}
+	</select>
+	
+	<!-- 회원 정보 수정 -->
+	<update id="editUserInfo" parameterType="comon.dto.UserDto">
+	 UPDATE t_user
+	    SET user_name = #{userName},
+	    	user_phone_number = #{userPhoneNumber},
+	    	user_email = #{userEmail}
+	  WHERE user_id = #{userId}
+	</update>
+	
+	<!-- 문의 내역 확인 -->
+	<select id="selectMyQnaList" parameterType="comon.dto.QnaDto">
+	 SELECT qna_title, qna_content, qna_comment, created_dt
+	   FROM t_qna
+	  WHERE user_idx = #{userIdx}
+	</select>
+	
+	<!-- userid를 기준으로 idx 조회-->
+	<select id="selectUserIdx" resultType="Integer" parameterType="String">
+	 SELECT user_idx
+	   FROM t_user
+	  WHERE user_id = #{userId}
+	</select>
+	
+	<!-- imageIdx, userIdx를 기준으로 imageUserDto 조회 -->
+	<select id="selectImageUserDto" resultType="comon.dto.ImageUserDto">
+	 SELECT react_port, springboot_port
+	   FROM t_image_user
+	  WHERE image_idx = #{imageIdx}
+	    AND user_idx = #{userIdx}
+	</select>
+</mapper>
