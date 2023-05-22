@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import comon.dto.ChartDto;
 import comon.dto.DenyDto;
 import comon.dto.ImageDto;
 import comon.dto.UserDto;
@@ -75,4 +76,25 @@ public interface AdminService {
 
 	// 개발자 회원 정보 수정
 	public int editUserInfo(UserDto data) throws Exception;
+
+	// 관리자 차트 - 월별 앱 출시 건수 차트
+	public List<ChartDto> monthlyOpenAppByCount() throws Exception;
+
+	// 관리자 차트 - 다운로드 카운트 랭킹순 앱 리스트
+	public List<ImageDto> openAppRankByCount() throws Exception;
+
+	// 관리자 차트 - 사용자 통계(일반 사용자)
+	public int countAllUser() throws Exception;
+
+	// 관리자 차트 - 사용자 통계(개발자)
+	public int countAllDev() throws Exception;
+
+	// 관리자 차트 - 전체 앱 다운로드 수 (월별) 차트
+	public List<ChartDto> totalAppDownload() throws Exception;
+
+	// 관리자 차트 - 앱별 다운로드 수 (월별) 차트
+	public List<ChartDto> appDownload(@Param("imageIdx") int imageIdx) throws Exception;
+
+	// 관리자 차트 - 앱 전체 카운트
+	public List<ChartDto> totalCount() throws Exception;
 }

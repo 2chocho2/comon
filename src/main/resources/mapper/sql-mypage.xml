@@ -33,7 +33,7 @@
 
 	<!-- 마이페이지에서 작성한 리뷰리스트 조회 -->
 	<select id="selectReview" resultType="comon.dto.ImageReviewDto">
-	 SELECT ir.image_idx, ir.review_content, ir.regist_dt, ir.user_idx, i.thumbnail_image, i.image_name, ir.review_idx	
+	 SELECT ir.image_idx, ir.review_content, ir.regist_dt, ir.user_idx, i.icon_image, i.image_name, ir.review_idx	
 	   FROM t_image_review ir , t_image i
 	  WHERE ir.user_idx = #{userIdx}
 	    AND ir.image_idx = i.image_idx

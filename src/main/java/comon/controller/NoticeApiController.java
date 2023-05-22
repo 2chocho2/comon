@@ -113,12 +113,20 @@ public class NoticeApiController {
 	
 	// 게시글 삭제
 	@DeleteMapping("/api/notice/detail/{noticeIdx}")
-	public ResponseEntity<Object> deleteNotice(@PathVariable("noticeIdx") int noticeIdx) throws Exception {
+	public ResponseEntity<Integer> deleteNotice(@PathVariable("noticeIdx") int noticeIdx) throws Exception {
 		try {
 			noticeService.deleteNotice(noticeIdx);
 			return ResponseEntity.status(HttpStatus.OK).body(1);
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
 		}
+	}
+	
+	// 메인 푸터에 노출될 2개 공지
+	@GetMapping("/api/notice/main")
+	public ResponseEntity<List<NoticeDto>> selectNoticeForFooter() throws Exception {
+		List<NoticeDto> list = noticeService.selectNoticeForFooter();
+		
+		return ResponseEntity.status(HttpStatus.OK).body(list);
 	}
 }

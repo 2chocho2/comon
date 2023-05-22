@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import comon.dto.ChartDto;
 import comon.dto.DenyDto;
 import comon.dto.ImageDto;
 import comon.dto.UserDto;
@@ -136,5 +137,40 @@ public class AdminServiceImpl implements AdminService {
 	// 개발자 회원 정보 수정
 	public int editUserInfo(UserDto data) throws Exception {
 		return adminMapper.editUserInfo(data);
+	}
+
+	// 관리자 차트 - 월별 앱 출시 건수 차트
+	public List<ChartDto> monthlyOpenAppByCount() throws Exception {
+		return adminMapper.monthlyOpenAppByCount();
+	}
+
+	// 관리자 차트 - 다운로드 카운트 랭킹순 앱 리스트
+	public List<ImageDto> openAppRankByCount() throws Exception {
+		return adminMapper.openAppRankByCount();
+	}
+
+	// 관리자 차트 - 사용자 통계(일반 사용자)
+	public int countAllUser() throws Exception {
+		return adminMapper.countAllUser();
+	}
+
+	// 관리자 차트 - 사용자 통계(개발자)
+	public int countAllDev() throws Exception {
+		return adminMapper.countAllDev();
+	}
+
+	// 전체 앱 다운로드 수 (월별) 차트
+	public List<ChartDto> totalAppDownload() throws Exception {
+		return adminMapper.totalAppDownload();
+	}
+
+	// 앱별 다운로드 수 (월별) 차트
+	public List<ChartDto> appDownload(int imageIdx) throws Exception {
+		return adminMapper.appDownload(imageIdx);
+	}
+
+	// 관리자 차트 - 전체 누적 카운트
+	public List<ChartDto> totalCount() throws Exception {
+		return adminMapper.totalCount();
 	}
 }

@@ -42,6 +42,7 @@
        Where n.notice_category_idx = #{noticeCategoryIdx}
        	 and nc.notice_category_idx = #{noticeCategoryIdx}
          and n.delete_yn = 'N'
+    order by notice_idx desc
    </select>
 	
 	<!-- 게시물 상세조회 -->
@@ -77,5 +78,14 @@
 	          notice_idx = notice_idx
 	    where notice_idx = #{noticeIdx}        
 	</delete>
+	
+	<!-- 메인 푸터에 노출될 2개 공지 -->
+	<select id="selectNoticeForFooter" resultType="comon.dto.NoticeDto">
+	SELECT notice_title, n.notice_category_idx, regist_dt, c.notice_category_name from t_notice n, t_notice_category c 
+     WHERE n.notice_category_idx = c.notice_category_idx
+       AND delete_yn = 'N'
+  ORDER BY notice_idx desc
+     LIMIT 2
+   </select>
 	
 </mapper>

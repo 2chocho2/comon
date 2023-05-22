@@ -64,10 +64,11 @@ public class MyPageApiController {
 		return ResponseEntity.status(HttpStatus.OK).body(list);
 	}
 
-	// 이미지에 유저가 리뷰를 작성한적 있는지 확인
-	@GetMapping("/api/myservice/{imageIdx}/{userIdx}") 
+	// 앱에 유저가 리뷰를 작성한적 있는지 확인
+	@GetMapping("/api/myservice/{imageIdx}/{userId}") 
 	public ResponseEntity<Integer> checkReview(@PathVariable ("imageIdx") int imageIdx, 
-											   @PathVariable ("userIdx") int userIdx) throws Exception {
+											   @PathVariable ("userId") String userId) throws Exception {
+		int userIdx = myPageService.selectUserIdx(userId);
 		ImageReviewDto imageReviewDto = new ImageReviewDto();
 		imageReviewDto.setImageIdx(imageIdx);
 		imageReviewDto.setUserIdx(userIdx);
@@ -78,7 +79,10 @@ public class MyPageApiController {
 
 	// 리뷰 작성
 	@PostMapping("/api/user/writereview/{imageIdx}")
-	public ResponseEntity<Integer> writeReview(@PathVariable ("imageIdx") int imageIdx ,@RequestBody ImageReviewDto imageReviewDto) throws Exception {
+	public ResponseEntity<Integer> writeReview(@PathVariable ("imageIdx") int imageIdx, @RequestBody ImageReviewDto imageReviewDto) throws Exception {
+		int userIdx = myPageService.selectUserIdx(imageReviewDto.getUserId());
+		imageReviewDto.setUserIdx(userIdx);
+		
 		int writeCount = myPageService.writeReview(imageReviewDto);
 
 		if (writeCount != 1) {
@@ -160,23 +164,6 @@ public class MyPageApiController {
 			return ResponseEntity.status(HttpStatus.OK).body(editCount);
 		}
 	}
-
-	// 문의 내역
-	@GetMapping("/api/mypage/qna/{userId}")
-	public ResponseEntity<List<QnaDto>> selectMyQnaList(@PathVariable("userId") String userId) throws Exception {
-		int userIdx = myPageService.selectUserIdx(userId);
-		List<QnaDto> list = myPageService.selectMyQnaList(userIdx);
-		
-		return ResponseEntity.status(HttpStatus.OK).body(list);
-	}
-	
-	// 문의하기 화면 요청 - userIdx 반납
-	@GetMapping("/api/qna/{userId}")
-	public ResponseEntity<Integer> selectUserIdx(@PathVariable("userId") String userId) throws Exception {
-		int userIdx = myPageService.selectUserIdx(userId);
-		
-		return ResponseEntity.status(HttpStatus.OK).body(userIdx);
-	}
 	
 	// 앱 실행
 	@GetMapping("/api/runapp/{userId}/{imageIdx}")
@@ -200,14 +187,11 @@ public class MyPageApiController {
 		String userYamlFileName = String.format("%s-yamlfile-%s-docker-compose-%s.yaml", randomNum, imageDto.getUserIdx(), userId);
 		
 		// c:\\comon\\userid\\imagename 디렉터리에서 해당 유저의 yaml 파일 compose up
-		final String runCommand =
-				String.format("cmd /C cd %s", UPLOAD_USER_YAMLFILE_PATH)
-				+ String.format(" && docker-compose -f %s up -d ", userYamlFileName);
+		final String runCommand = String.format("cmd /C docker-compose -f %s%s\\%s up -d ", UPLOAD_USER_YAMLFILE_PATH, userId, userYamlFileName);
 		
 		try {
 			process = Runtime.getRuntime().exec(runCommand);
-			process.waitFor();
-			exitCode = process.exitValue();
+			log.debug(">>>>>>>>>>>>>>>>" + runCommand);
 		} catch (IOException e) {
 			e.printStackTrace();
 			exitCode = -1;

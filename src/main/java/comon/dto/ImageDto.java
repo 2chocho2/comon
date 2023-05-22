@@ -35,6 +35,7 @@ public class ImageDto {
 	private String denyName;
 	private int springbootPort;
 	private int reactPort;
+	private String monthlyCount;
 	
 	public int setScreenshotImage(List<String> images) {
 		int i = 0;

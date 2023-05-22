@@ -205,4 +205,58 @@
 	    	user_phone_number = #{userPhoneNumber}
 	  WHERE user_id = #{userId}
 	</update>
+	   
+   <!-- !관리자 차트! -->
+   <!--월별 앱 출시 건수 차트 -->
+   <select id="monthlyOpenAppByCount" resultType="comon.dto.ChartDto">
+      SELECT DATE_FORMAT(regist_dt, '%Y-%m') as registDt, COUNT(status_idx='4') as monthlyCount
+        FROM t_image
+    GROUP BY DATE_FORMAT(regist_dt, '%Y-%m')
+   </select>
+   
+   <!-- 다운로드 카운트 랭킹순 앱 리스트 -->
+   <select id="openAppRankByCount" resultType="comon.dto.ImageDto">
+      SELECT image_idx, i.image_name, i.icon_image, i.download_count, u.user_name
+        FROM t_image i, t_auth a, t_user u
+       WHERE status_idx = '4'
+         AND a.auth_idx = 2
+         AND i.user_idx = u.user_idx
+    ORDER BY download_count desc
+     </select>
+   
+   <!-- 사용자 정보 통계 : 사용자 -->
+   <select id="countAllUser" resultType="int">
+     SELECT COUNT(*)
+       FROM t_user
+      WHERE auth_idx = 1
+   </select>
+      
+   <!-- 사용자 정보 통계 : 개발자 -->
+   <select id="countAllDev" resultType="int">
+     SELECT COUNT(*)
+       FROM t_user
+      WHERE auth_idx = 2
+   </select>
+   
+   <!-- 전체 앱 다운로드 수 (월별) 차트 -->
+   <select id="totalAppDownload" resultType="comon.dto.ChartDto">
+     SELECT DATE_FORMAT(download_date,'%Y-%m') AS downloadDate, COUNT(*) AS downloadCount
+       FROM t_image_user
+   GROUP BY DATE_FORMAT(download_date,'%Y-%m');
+   </select>
+   
+   <!-- 앱별 다운로드 수 (월별) 차트 --> 
+   <select id="appDownload" parameterType="Integer" resultType="comon.dto.ChartDto">
+     SELECT DATE_FORMAT(download_date,'%Y-%m') AS downloadDate, COUNT(CASE WHEN DATE_FORMAT(download_date, '%Y-%m')THEN 1 END) AS downloadCount
+       FROM t_image_user 
+      WHERE image_idx=#{imageIdx} 
+   GROUP BY image_idx, DATE_FORMAT(download_date, '%Y-%m');
+   </select>
+   
+   <!-- 전체 누적 카운트 -->
+   <select id="totalCount" resultType="comon.dto.ChartDto">
+      SELECT COUNT(status_idx='4') as totalOpenApp, SUM(download_count) as totalDownloadCount 
+        FROM t_image;
+   </select>
+	
 </mapper>

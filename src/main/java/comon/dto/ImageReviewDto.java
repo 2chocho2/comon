@@ -13,6 +13,9 @@ public class ImageReviewDto {
 	private int scoreCount;
 	private int selectCount;
 	private String thumbnailImage;
+	private String iconImage;
 	private String imageName;
+	private String userId;
+	private String userName;
 	
 }

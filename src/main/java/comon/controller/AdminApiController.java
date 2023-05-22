@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import comon.dto.ChartDto;
 import comon.dto.DenyDto;
 import comon.dto.ImageDto;
 import comon.dto.UserDto;
@@ -41,7 +42,7 @@ public class AdminApiController {
 	private final String UPLOAD_THUMBNAIL_PATH = "c:\\comon\\app\\thumbnail\\";
 	private final String UPLOAD_SCREENSHOT_PATH = "c:\\comon\\app\\screenshot\\";
 	private final String UPLOAD_YAMLFILE_PATH = "c:\\comon\\app\\yamlfile\\";
-	
+
 	private ImageDto imageDto;
 
 	@Autowired
@@ -186,7 +187,8 @@ public class AdminApiController {
 
 	// 개발자별 앱 목록 조회
 	@GetMapping("/api/dev/applist/{userId}")
-	public ResponseEntity<Map<String, Object>> openAppListByUser(@PathVariable("userId") String userId) throws Exception {
+	public ResponseEntity<Map<String, Object>> openAppListByUser(@PathVariable("userId") String userId)
+			throws Exception {
 		Map<String, Object> result = new HashMap<>();
 
 		int userIdx = adminService.selectIdxByUserId(userId);
@@ -413,6 +415,84 @@ public class AdminApiController {
 			return ResponseEntity.status(HttpStatus.OK).body(editCount);
 		}
 	}
-	
-	
+
+	// 관리자 차트 - 월별 앱 출시 건수 차트
+	@GetMapping("/api/admin/chart/monthlycount")
+	public ResponseEntity<Map<String, Object>> monthlyOpenAppByCount() throws Exception {
+		Map<String, Object> result = new HashMap<>();
+
+		List<ChartDto> list = adminService.monthlyOpenAppByCount();
+		result.put("list", list);
+
+		if (list != null) {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+		}
+	}
+
+	// 관리자 차트 - 다운로드 카운트 랭킹순 앱 리스트
+	@GetMapping("/api/admin/chart/rankcount")
+	public ResponseEntity<List<ImageDto>> openAppRankByCount() throws Exception {
+		List<ImageDto> list = adminService.openAppRankByCount();
+
+		return ResponseEntity.status(HttpStatus.OK).body(list);
+	}
+
+	// 관리자 차트 - 사용자 수 통계
+	@GetMapping("/api/admin/chart/countalluseranddev")
+	public ResponseEntity<ChartDto> countAllUserAndDev() {
+		try {
+			int userCount = adminService.countAllUser();
+			int devCount = adminService.countAllDev();
+
+			ChartDto dto = new ChartDto();
+			dto.setCountAllUser(userCount);
+			dto.setCountAllDev(devCount);
+
+			return ResponseEntity.ok().body(dto);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	// 전체 앱 다운로드 (월별) 차트
+	@GetMapping("/api/admin/chart/totalappcount")
+	public ResponseEntity<Map<String, Object>> totalAppDownload() throws Exception {
+		Map<String, Object> result = new HashMap<>();
+
+		List<ChartDto> list = adminService.totalAppDownload();
+		result.put("totalCount", list);
+
+		if (list != null) {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+		}
+
+	}
+
+	// 앱별 다운로드 (월별) 차트
+	@GetMapping("/api/admin/chart/count/{imageIdx}")
+	public ResponseEntity<Map<String, Object>> appDownload(@PathVariable("imageIdx") int imageIdx) throws Exception {
+		Map<String, Object> result = new HashMap<>();
+
+		List<ChartDto> list = adminService.appDownload(imageIdx);
+		result.put("count", list);
+
+		if (list != null) {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+		}
+	}
+
+	// 관리자 차트 - 전체 누적 카운트
+	@GetMapping("/api/admin/chart/totalcount")
+	public ResponseEntity<List<ChartDto>> totalCount() throws Exception {
+		List<ChartDto> list = adminService.totalCount();
+
+		return ResponseEntity.status(HttpStatus.OK).body(list);
+	}
+
 }

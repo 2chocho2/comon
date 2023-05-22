@@ -7,19 +7,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,7 +50,6 @@ public class ComonMainApiController {
 
 	// 메인에 랜덤으로 3개 앱 목록 출력
 	// 다운로드 카운트가 가장 높은 3개 출력
-	// 하나의 api로 두 개(랜덤, 랭킹)의 결과 전송하기
 	@GetMapping("/api/main")
 	public ResponseEntity<Map<String, Object>> openRecommendApp() throws Exception {
 		Map<String, Object> result = new HashMap<>();
@@ -127,31 +126,29 @@ public class ComonMainApiController {
 
 	// 앱 다운로드
 	@PostMapping("/api/user/downloadapp")
-//	@Async
 	public ResponseEntity<Map<String, Integer>> downloadApp(@RequestBody ImageUserDto imageUserDto, HttpSession session)
 			throws Exception {
 
 		Map<String, Integer> list = new HashMap<>();
 		
-		List<String> result = null;
 		String yamlFile = comonMainService.selectYamlFile(imageUserDto.getImageIdx());
 		String yamlFilePath = UPLOAD_YAMLFILE_PATH + yamlFile;
 		long randomNum = comonMainService.selectRandomNum(imageUserDto.getImageIdx());
 		int exitCode = 0;
 		Process process = null;
-		Process process2 = null;
-
-		final String command = String.format("cmd /C mkdir c:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)
-				+ String.format(" && docker-compose -f \"%s%s\" build --no-cache", UPLOAD_USER_YAMLFILE_PATH,
-						yamlFile.replace(".yaml", "-" + imageUserDto.getUserId() + ".yaml"));
 		
-		log.debug(">>>>>>>>>>>>>>>>>>>>>>>" + command);
+		final String command = String.format("docker-compose -f \"%s%s\\%s\" build --no-cache ", 
+								UPLOAD_USER_YAMLFILE_PATH, imageUserDto.getUserId(),
+								yamlFile.replace(".yaml", "-" + imageUserDto.getUserId() + ".yaml"));
+		
+		Files.createDirectories(Paths.get(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)));
+		
+		
 		// download 전 download 받은 적이 있는지 확인
 		int userIdx = comonMainService.selectUserIdx(imageUserDto.getUserId());
 		imageUserDto.setUserIdx(userIdx);
 
 		String deleteYn = comonMainService.checkDownload(imageUserDto);
-		
 		if(deleteYn == null) {
 			try {
 				// YAML 파일 읽기
@@ -183,7 +180,7 @@ public class ComonMainApiController {
 
 				updateValue(data, "REACT_PORT", "" + reactPort);
 
-				String newUserYamlFilePath = UPLOAD_USER_YAMLFILE_PATH
+				String newUserYamlFilePath = UPLOAD_USER_YAMLFILE_PATH + imageUserDto.getUserId() + '\\'
 						+ yamlFile.replace(".yaml", "-" + imageUserDto.getUserId() + ".yaml");
 				FileWriter writer = new FileWriter(newUserYamlFilePath);
 				DumperOptions options = new DumperOptions();
@@ -196,33 +193,15 @@ public class ComonMainApiController {
 			} catch (IOException e) {
 				e.printStackTrace();
 			} 
-
-			try {
 			
-				File file = new File(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum));
-		        file.mkdir();
-				
-				process2 = Runtime.getRuntime().exec(command);
-				exitCode = process2.waitFor();
+			Files.createDirectories(Paths.get(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)));
+			Files.createDirectories(Paths.get(String.format("C:\\comon\\app\\useryamlfile\\%s", imageUserDto.getUserId())));
 
-			} catch (IOException e) {
-				e.printStackTrace();
-				exitCode = -1;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			process = Runtime.getRuntime().exec(command);
 			
-			if (exitCode != 0) {
-				log.debug(">>>>>>>>>>>>>>>>>>>>>>>");
-				BufferedReader errorReader = new BufferedReader(new InputStreamReader(process2.getErrorStream()));
-				String errorLine;
-				while ((errorLine = errorReader.readLine()) != null) {
-				    System.err.println(errorLine);
-				}
-			}
-
+			log.debug("**************** command  = " + command);
+			
 			int downloadCount = comonMainService.downloadApp(imageUserDto);
-
 			list.put("exitCode", exitCode);
 			list.put("downloadCount", downloadCount);
 			
@@ -233,21 +212,16 @@ public class ComonMainApiController {
 		else if (deleteYn.equals("Y")) {
 			int updateCount = comonMainService.toggleDeleteYn(imageUserDto);
 
-			try {
-				process = Runtime.getRuntime().exec(command);
-				log.debug(">>>>>>>>>>>>>>>>" + command);
-				exitCode = process.waitFor();
-				log.debug("###################" + exitCode);
-			} catch (IOException e) {
-				e.printStackTrace();
-				exitCode = -1;
-			}
-
+			Files.createDirectories(Paths.get(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)));
+			
+			process = Runtime.getRuntime().exec(command);
+			
 			list.put("exitCode", exitCode);
 			list.put("updateCount", updateCount);
 			
 			return ResponseEntity.status(HttpStatus.OK).body(list);
 		}
+		
 		// case2. download 내역이 있고 삭제하지 않은 경우
 		else{
 			return ResponseEntity.status(HttpStatus.OK).body(list);

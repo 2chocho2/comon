@@ -37,4 +37,6 @@ public interface NoticeMapper {
 	// 게시물 삭제
 	public void deleteNotice(int noticeIdx) throws Exception;
 	
+	// 메인 푸터에 노출될 2개 공지
+	public List<NoticeDto> selectNoticeForFooter() throws Exception;
 }
