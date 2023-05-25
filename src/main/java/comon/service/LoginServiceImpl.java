@@ -23,12 +23,12 @@ public class LoginServiceImpl implements LoginService {
 
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
-	
+
 	@Override
 	public UserDto login(LoginDto loginDto) throws Exception {
 		return loginMapper.login(loginDto);
 	}
-	
+
 	@Override
 	public int registUser(UserDto userDto, HttpSession session) throws Exception {
 		userDto.setUserPassword(passwordEncoder.encode(userDto.getUserPassword()));
@@ -41,15 +41,27 @@ public class LoginServiceImpl implements LoginService {
 		if (userDto == null) {
 			throw new UsernameNotFoundException(username);
 		}
-		
-		return new User(userDto.getUserId(), userDto.getUserPassword(), 
-				true, true, true, true, new ArrayList<>());		
+
+		return new User(userDto.getUserId(), userDto.getUserPassword(), true, true, true, true, new ArrayList<>());
 	}
 
 	@Override
 	public UserDto selectUserByUserId(String userId) throws Exception {
 		return loginMapper.selectUserByUserId(userId);
 	}
-	
-	
+
+	// 아이디 중복체크
+	@Override
+	public int idCheck(String id) {
+		int cnt = loginMapper.idCheck(id);
+		return cnt;
+	}
+
+	// 이름 중복체크
+	@Override
+	public int nameCheck(String name) {
+		int cntN = loginMapper.nameCheck(name);
+		return cntN;
+	}
+
 }

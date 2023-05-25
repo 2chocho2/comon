@@ -37,6 +37,7 @@
 	   FROM t_image_review ir , t_image i
 	  WHERE ir.user_idx = #{userIdx}
 	    AND ir.image_idx = i.image_idx
+   ORDER BY i.regist_dt desc
 	</select>
 	
 	<!-- 유저가 사용하는 앱 목록 출력 -->

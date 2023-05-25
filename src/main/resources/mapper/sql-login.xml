@@ -21,4 +21,15 @@
 	   FROM t_user
 	  WHERE user_id = #{userId}
 	</select>
+	
+	<!-- 아이디 중복 체크 -->
+   <select id="idCheck" parameterType="String" resultType="int">
+    SELECT COUNT(*) FROM t_user WHERE user_id= #{id}
+   </select>
+
+   
+   <!-- 이름 중복 체크 -->
+   <select id="nameCheck" parameterType="String" resultType="int">
+    SELECT COUNT(*) FROM t_user WHERE user_name= #{name}
+   </select>
 </mapper>

@@ -125,7 +125,6 @@ public class AdminApiController {
 	@DeleteMapping("/api/admin/registdelete/{imageIdx}")
 	public ResponseEntity<Integer> deleteApp(@PathVariable("imageIdx") int imageIdx) throws Exception {
 
-//			imageDto.setImageIdx(imageIdx);
 		int deleteCount = adminService.deleteApp(imageIdx);
 
 		if (deleteCount != 1) {
@@ -231,8 +230,7 @@ public class AdminApiController {
 		long randomNum = System.currentTimeMillis();
 		data.setRandomNum(randomNum);
 
-		List<Map<String, String>> resultList = saveFiles(iconimage, UPLOAD_ICON_PATH, "icon", randomNum,
-				data.getUserIdx());
+		List<Map<String, String>> resultList = saveFiles(iconimage, UPLOAD_ICON_PATH, "icon", randomNum, data.getUserIdx());
 		for (Map<String, String> result : resultList) {
 			String iconImage = result.get("savedFileName");
 			data.setIconImage(iconImage);
@@ -307,7 +305,7 @@ public class AdminApiController {
 		}
 	}
 
-	// 이미지, yaml 파일 저장 로직
+	// 이미지, yaml 파일 저장 로직 
 	private List<Map<String, String>> saveFiles(MultipartFile[] files, String path, String field, long randomNum,
 			int userIdx) {
 		List<Map<String, String>> resultList = new ArrayList<>();

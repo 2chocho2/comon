@@ -111,8 +111,8 @@ public class MyPageApiController {
 												HttpSession session) throws Exception {
 		
 		// 해당 사용자가 사용하는 디렉터리 정보 삭제
-		long randonNum = comonMainService.selectRandomNum(imageIdx);
-		final String deleteCommand = String.format("cmd /C RD /S /Q /comon\\%s\\%s", userId, randonNum);
+		long randomNum = comonMainService.selectRandomNum(imageIdx);
+		final String deleteCommand = String.format("cmd /C RD /S /Q /comon\\%s\\%s", userId, randomNum);
 		
 		Process process = null;
 		int exitCode = 0;
@@ -183,11 +183,11 @@ public class MyPageApiController {
 		ImageDto imageDto = comonMainService.openAppDetail(imageIdx);
 		long randomNum = comonMainService.selectRandomNum(imageIdx);
 		// 유저의 고유 yamlfile 조회
-		// 파일명: 이미지이름-yamlfile-devid-docker-compose-userid.yaml
+		// 파일명: 고유숫자-yamlfile-devidx-docker-compose-userid.yaml
 		String userYamlFileName = String.format("%s-yamlfile-%s-docker-compose-%s.yaml", randomNum, imageDto.getUserIdx(), userId);
 		
 		// c:\\comon\\userid\\imagename 디렉터리에서 해당 유저의 yaml 파일 compose up
-		final String runCommand = String.format("cmd /C docker-compose -f %s%s\\%s up -d ", UPLOAD_USER_YAMLFILE_PATH, userId, userYamlFileName);
+		final String runCommand = String.format("docker-compose -f %s%s\\%s up -d ", UPLOAD_USER_YAMLFILE_PATH, userId, userYamlFileName);
 		
 		try {
 			process = Runtime.getRuntime().exec(runCommand);

@@ -38,7 +38,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable();
 		http.authorizeRequests()
-			.antMatchers("/login", "/api/regist", "/error", "/api/main", "/api/getimage/**", "/api/user/applist/**", "/api/notice/**", "/checkUserExistence", "/loginFromSocial", "/api/download/**").permitAll()
+			.antMatchers("/login", "/api/regist", "/error", "/api/main", "/api/getimage/**", "/api/user/applist/**", "/api/notice/**", "/checkUserExistence", "/loginFromSocial", "/api/download/**", "/api/idCheck").permitAll()
 			.anyRequest().authenticated()
 			.and().addFilter(getAuthenticationFilter())
 			.addFilterBefore(jwtRequestFilter, AuthenticationFilter.class).cors();

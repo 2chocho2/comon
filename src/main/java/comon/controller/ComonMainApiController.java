@@ -141,7 +141,7 @@ public class ComonMainApiController {
 								UPLOAD_USER_YAMLFILE_PATH, imageUserDto.getUserId(),
 								yamlFile.replace(".yaml", "-" + imageUserDto.getUserId() + ".yaml"));
 		
-		Files.createDirectories(Paths.get(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)));
+//		Files.createDirectories(Paths.get(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)));
 		
 		
 		// download 전 download 받은 적이 있는지 확인
@@ -149,7 +149,12 @@ public class ComonMainApiController {
 		imageUserDto.setUserIdx(userIdx);
 
 		String deleteYn = comonMainService.checkDownload(imageUserDto);
+		// case1. 
 		if(deleteYn == null) {
+			
+			Files.createDirectories(Paths.get(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)));
+			Files.createDirectories(Paths.get(String.format("C:\\comon\\app\\useryamlfile\\%s", imageUserDto.getUserId())));
+
 			try {
 				// YAML 파일 읽기
 				InputStream inputStream = new FileInputStream(new File(yamlFilePath));
@@ -194,9 +199,7 @@ public class ComonMainApiController {
 				e.printStackTrace();
 			} 
 			
-			Files.createDirectories(Paths.get(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)));
-			Files.createDirectories(Paths.get(String.format("C:\\comon\\app\\useryamlfile\\%s", imageUserDto.getUserId())));
-
+			
 			process = Runtime.getRuntime().exec(command);
 			
 			log.debug("**************** command  = " + command);
@@ -208,11 +211,12 @@ public class ComonMainApiController {
 			return ResponseEntity.status(HttpStatus.OK).body(list);
 		}
 		
-		// case1. download 내역이 있으나 삭제한 경우
+		// case2. download 내역이 있으나 삭제한 경우
 		else if (deleteYn.equals("Y")) {
 			int updateCount = comonMainService.toggleDeleteYn(imageUserDto);
 
 			Files.createDirectories(Paths.get(String.format("C:\\comon\\%s\\%s", imageUserDto.getUserId(), randomNum)));
+			Files.createDirectories(Paths.get(String.format("C:\\comon\\app\\useryamlfile\\%s", imageUserDto.getUserId())));
 			
 			process = Runtime.getRuntime().exec(command);
 			
@@ -222,7 +226,7 @@ public class ComonMainApiController {
 			return ResponseEntity.status(HttpStatus.OK).body(list);
 		}
 		
-		// case2. download 내역이 있고 삭제하지 않은 경우
+		// case3. download 내역이 있고 삭제하지 않은 경우
 		else{
 			return ResponseEntity.status(HttpStatus.OK).body(list);
 		}
