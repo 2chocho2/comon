@@ -17,7 +17,7 @@
 	   FROM t_image i, t_user d 
 	  WHERE status_idx = '4'
 	    AND i.user_idx = d.user_idx
-   ORDER BY download_count
+   ORDER BY download_count desc
 	  LIMIT 3
 	</select>
 	
